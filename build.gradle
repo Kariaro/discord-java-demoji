@@ -1,0 +1,39 @@
+plugins {
+    // Apply the java-library plugin for API and implementation separation.
+    id 'java'
+}
+
+repositories {
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+}
+
+archivesBaseName = 'discord-java-demoji'
+group = 'com.hardcoded'
+version = '1.0.0'
+
+description = ''
+
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.encoding = 'UTF-8'
+	it.options.release = 16
+}
+
+dependencies {
+    // Use JUnit test framework.
+    testImplementation 'junit:junit:4.13.1'
+	
+	// https://mvnrepository.com/artifact/com.google.code.gson/gson
+	implementation 'com.google.code.gson:gson:2.8.8'
+}
+
+java {
+	withSourcesJar()
+}
+
+jar {
+	from 'LICENSE'
+}
