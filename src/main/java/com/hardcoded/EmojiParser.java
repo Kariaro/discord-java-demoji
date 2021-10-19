@@ -49,7 +49,7 @@ public class EmojiParser {
 	 * Returns a text with all unicode emoji replaced with Discord shortcodes.
 	 * 
 	 * <p>All unknown codePoints that did not match any emoji but had bits
-	 * present in the higher 16 bits {@code 0xffff0000} be removed.
+	 * present in the higher 16 bits {@code 0xffff0000} will be removed.
 	 * 
 	 * @param text the text that should be modified
 	 */
