@@ -1,7 +1,18 @@
 # discord-java-demoji
 
-This library will convert unicode emoji into the Discord shortcode equivalent.
+This library supports Emoji 13.1 and converts all unicode emojis into Discord shortcodes.
 
-No test code has been written yet but should work for all Discord emoji.
+```java
+String result = EmojiParser.parse("Hello world! ☺");
+System.out.println(result); // "Hello world! :relaxed:"
+```
 
-Still contains scrap code.
+Unit tests can be found in `src/test/java/test`
+
+## Generating the mappings
+This library requires a mapping file to correctly convert emoji to shortcodes.
+If you want to update the `emoji.json` file to handle more shortcodes you can run the mapping generator `com.hardcoded.generator.EmojiMappingGenerator`.
+
+There is no general solution to generating the mappings for this project and the format discord uses could change in the future.
+
+The internal format of this project will not change.
