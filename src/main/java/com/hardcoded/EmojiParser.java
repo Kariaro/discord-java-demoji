@@ -1,15 +1,15 @@
 package com.hardcoded;
 
-import java.io.*;
-import java.lang.reflect.Type;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
 /**
- * This code converts unicode emoji into the discord equivalent shortcodes.
+ * This code converts unicode emojis into the Discord equivalent shortcodes.
  * 
  * @date 2021-10-18
  * @author HardCoded <https://github.com/Kariaro>
@@ -17,90 +17,57 @@ import com.google.gson.reflect.TypeToken;
  * @see https://unicode.org/Public/emoji/14.0/emoji-sequences.txt
  */
 public class EmojiParser {
+	private static final String EMOJI_MAPPINGS = "/emoji.json";
 	private static final int PRESENTATION_SELECTOR = 0x0000FE0F;
 	//private static final int ZERO_WITH_JOINER      = 0x0000200D;
 	
-	private static final String FILE = "/debug/discord.json";
-	private static final String FILE_CLEAN = "/discord_clean.json";
 	private static final EmojiMap emojiMap;
-	
-	public static final void init() {
-		
-	}
 	
 	static {
 		EmojiMap map = null;
 		
-		try(InputStream stream = EmojiParser.class.getResourceAsStream(FILE_CLEAN)) {
+		try(InputStream stream = EmojiParser.class.getResourceAsStream(EMOJI_MAPPINGS)) {
+			if(stream == null)
+				throw new NullPointerException("Emoji mappings was not found");
+			
 			map = new GsonBuilder().create().fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), EmojiMap.class);
-		} catch(Exception e) {
+		} catch(IOException e) {
 			e.printStackTrace();
-		}
-		
-		if(map == null) {
-			try(InputStream stream = EmojiParser.class.getResourceAsStream(FILE)) {
-				Type mapType = new TypeToken<Map<String, List<DiscordEmoji>>>() {}.getType();
-				Map<String, List<DiscordEmoji>> tmp = new GsonBuilder().create()
-					.fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), mapType);
-				
-				map = new EmojiMap();
-				for(List<DiscordEmoji> tmpList : tmp.values()) {
-					for(DiscordEmoji discordEmoji : tmpList) {
-						map.add(discordEmoji);
-						
-						if(discordEmoji.diversityChildren != null) {
-							for(DiscordEmoji emoji : discordEmoji.diversityChildren) {
-								map.add(emoji);
-							}
-						}
-					}
-				}
-				
-				FileWriter writer = new FileWriter(new File("src/main/resources/" + FILE_CLEAN));
-				new GsonBuilder().create().toJson(map, writer);
-				writer.close();
-			} catch(IOException e) {
-				e.printStackTrace();
-			}
 		}
 		
 		emojiMap = map;
 	}
 	
 	/**
+	 * Calling this method ensures that the emoji data has been initialized.
+	 */
+	public static final void init() {
+		
+	}
+	
+	/**
 	 * Returns a text with all unicode emoji replaced with Discord shortcodes.
+	 * 
+	 * <p>All unknown codePoints that did not match any emoji but had bits
+	 * present in the higher 16 bits {@code 0xffff0000} be removed.
+	 * 
 	 * @param text the text that should be modified
 	 */
 	public static String parse(String text) {
 		return emojiMap.parse(text.codePoints().toArray());
 	}
 	
-	private static class DiscordEmoji {
-		public List<String> names;
-		public String surrogates;
-		public DiscordEmoji[] diversityChildren;
-		
-		// Unused fields that exist within the json file
-		
-		// public List<String> diversity;
-		// public double unicodeVersion;
-		// public boolean hasDiversity;
-		// public boolean hasDiversityParent;
-		// public boolean hasMultiDiversity;
-		// public boolean hasMultiDiversityParent;
-	}
-	
 	private static class Emoji {
 		public final int[] pattern;
 		public final String alias;
 		
-		public Emoji(DiscordEmoji discordEmoji) {
-			this.pattern = discordEmoji.surrogates.codePoints().filter(i -> {
+		public Emoji(String surrogates, String alias) {
+			this.pattern = surrogates.codePoints().filter(i -> {
 				// Some base modifiers are followed by a presentation selector.
 				// It is easier to compare emoji if the presentation selector is removed.
 				return i != PRESENTATION_SELECTOR;
 			}).toArray();
-			this.alias = ":%s:".formatted(discordEmoji.names.get(0));
+			this.alias = ":%s:".formatted(alias);
 		}
 		
 		/**
@@ -111,7 +78,7 @@ public class EmojiParser {
 		 * @param index the index of the array
 		 * @return how many characters that was matched
 		 */
-		public int equalsInput(int[] input, int index) {
+		int equalsInput(int[] input, int index) {
 			final int patternLen = pattern.length;
 			final int inputLen = input.length;
 			
@@ -170,11 +137,14 @@ public class EmojiParser {
 		}
 	}
 	
-	private static class EmojiMap {
+	/**
+	 * Used internally to parse unicode emojis into Discord shortcodes.
+	 */
+	public static class EmojiMap {
 		private final Map<Integer, Set<Emoji>> map = new HashMap<>();
 		
-		private void add(DiscordEmoji discordEmoji) {
-			Emoji emoji = new Emoji(discordEmoji);
+		public void add(String surrogates, String alias) {
+			Emoji emoji = new Emoji(surrogates, alias);
 
 			// Java defines that if the added element matches any other element
 			// by using the operation Objects.equals(emoji, element[n]) then the
