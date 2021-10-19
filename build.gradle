@@ -1,18 +1,15 @@
 plugins {
-    // Apply the java-library plugin for API and implementation separation.
-    id 'java'
+	// Apply the java-library plugin for API and implementation separation.
+	id 'java'
+	id 'maven-publish'
 }
 
 repositories {
-    // Use Maven Central for resolving dependencies.
-    mavenCentral()
+	// Use Maven Central for resolving dependencies.
+	mavenCentral()
 }
 
-archivesBaseName = 'discord-java-demoji'
-group = 'com.hardcoded'
 version = '1.0.0'
-
-description = ''
 
 sourceCompatibility = JavaVersion.VERSION_16
 targetCompatibility = JavaVersion.VERSION_16
@@ -23,8 +20,8 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 dependencies {
-    // Use JUnit test framework.
-    testImplementation 'junit:junit:4.13.1'
+	// Use JUnit test framework.
+	testImplementation 'junit:junit:4.13.1'
 	
 	// https://mvnrepository.com/artifact/com.google.code.gson/gson
 	implementation 'com.google.code.gson:gson:2.8.8'
@@ -37,3 +34,17 @@ java {
 jar {
 	from 'LICENSE'
 }
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			groupId = 'com.github.kariaro'
+			artifactId = 'discord-java-demoji'
+			version = '1.0.0'
+
+			from components.java
+		}
+	}
+}
+
+

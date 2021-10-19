@@ -1,4 +1,5 @@
 # discord-java-demoji
+[![Release](https://jitpack.io/v/kariaro/discord-java-demoji.svg)](https://jitpack.io/#kariaro/discord-java-demoji)
 
 This library supports Emoji 13.1 and converts all unicode emojis into Discord shortcodes.
 
@@ -16,3 +17,16 @@ If you want to update the `emoji.json` file to handle more shortcodes you can ru
 There is no general solution to generating the mappings for this project and the format discord uses could change in the future.
 
 The internal format of this project will not change.
+
+## Usage
+To use this library include this in your `build.gradle`
+
+```
+repositories {
+    jcenter()
+    maven { url 'https://jitpack.io' }
+}
+dependencies {
+    implementation 'com.github.hardcoded:discord-java-demoji:version'
+}
+```
